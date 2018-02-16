@@ -1,0 +1,11 @@
+.vs
+Debug
+Release
+*.o
+.deps
+*.so
+packages
+TestResults
+*.opendb
+*.VC.db
+*.user
