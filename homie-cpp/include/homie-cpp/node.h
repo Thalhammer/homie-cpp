@@ -11,8 +11,8 @@ namespace homie {
 		virtual std::string get_type() const = 0;
 		virtual bool is_array() const = 0;
 		virtual std::pair<int64_t, int64_t> array_range() const = 0;
-		virtual std::vector<const_property_ptr> get_properties() const = 0;
-		virtual std::vector<property_ptr> get_properties() = 0;
+		virtual std::set<const_property_ptr> get_properties() const = 0;
+		virtual std::set<property_ptr> get_properties() = 0;
 	};
 	typedef std::shared_ptr<node> node_ptr;
 	typedef std::shared_ptr<const node> const_node_ptr;

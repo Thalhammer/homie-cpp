@@ -75,7 +75,7 @@ namespace homie {
 					{
 						if (property->get_id() != sproperty)
 							continue;
-						if(is_array_node)
+						if (is_array_node)
 							property->set_value(id, payload);
 						else property->set_value(payload);
 					}
@@ -123,7 +123,7 @@ namespace homie {
 				for (auto& property : node->get_properties()) {
 					properties += property->get_id() + ",";
 					this->publish_device_attribute(dev->get_id(), node->get_id() + "/" + property->get_id() + "/$name", property->get_name());
-					this->publish_device_attribute(dev->get_id(), node->get_id() + "/" + property->get_id() + "/$settable", property->is_settable() ? "true":"false");
+					this->publish_device_attribute(dev->get_id(), node->get_id() + "/" + property->get_id() + "/$settable", property->is_settable() ? "true" : "false");
 					this->publish_device_attribute(dev->get_id(), node->get_id() + "/" + property->get_id() + "/$unit", property->get_unit());
 					this->publish_device_attribute(dev->get_id(), node->get_id() + "/" + property->get_id() + "/$datatype", enum_to_string(property->get_datatype()));
 					this->publish_device_attribute(dev->get_id(), node->get_id() + "/" + property->get_id() + "/$format", property->get_format());
@@ -143,7 +143,7 @@ namespace homie {
 			if (!nodes.empty())
 				nodes.resize(nodes.size() - 1);
 			this->publish_device_attribute(dev->get_id(), "$nodes", nodes);
-			
+
 			// Publish stats
 			std::string stats = "";
 			for (auto& stat : dev->get_stats()) {
@@ -168,6 +168,62 @@ namespace homie {
 		void publish_device_attribute(const std::string& devid, const std::string& attribute, const std::string& value) {
 			mqtt.publish(base_topic + devid + "/" + attribute, value, 1, true);
 		}
+
+		void notify_property_changed_impl(const std::string& sdevice, const std::string& snode, const std::string& sproperty, const int64_t* idx) {
+			if (sdevice.empty() || snode.empty() || sproperty.empty())
+				return;
+
+			auto device = find_device_by_name(sdevice);
+			if (!device) return;
+			auto node = find_node_by_name(device, snode);
+			if (!node) return;
+			auto prop = find_property_by_name(node, sproperty);
+			if (!prop) return;
+			if (node->is_array()) {
+				if (idx != nullptr) {
+					this->publish_device_attribute(device->get_id(), node->get_id() + "_" + std::to_string(*idx) + "/" + prop->get_id(), prop->get_value(*idx));
+				}
+				else {
+					auto range = node->array_range();
+					for (auto i = range.first; i <= range.second; i++) {
+						this->publish_device_attribute(device->get_id(), node->get_id() + "_" + std::to_string(i) + "/" + prop->get_id(), prop->get_value(i));
+					}
+				}
+			}
+			else {
+				this->publish_device_attribute(device->get_id(), node->get_id() + "/" + prop->get_id(), prop->get_value());
+			}
+		}
+
+		device_ptr find_device_by_name(const std::string& d) {
+			for (auto& dev : devices)
+			{
+				if (dev->get_id() != d)
+					continue;
+				return dev;
+			}
+			return nullptr;
+		}
+
+		static node_ptr find_node_by_name(device_ptr dev, const std::string& n) {
+			for (auto& node : dev->get_nodes())
+			{
+				if (node->get_id() != n)
+					continue;
+				return node;
+			}
+			return nullptr;
+		}
+
+		static property_ptr find_property_by_name(node_ptr node, const std::string& p) {
+			for (auto& prop : node->get_properties())
+			{
+				if (prop->get_id() != p)
+					continue;
+				return prop;
+			}
+			return nullptr;
+		}
 	public:
 		client(mqtt_connection& con, std::string basetopic = "homie/")
 			: mqtt(con), base_topic(basetopic)
@@ -188,6 +244,14 @@ namespace homie {
 			if (devices.count(dev) != 0) return;
 			devices.insert(dev);
 			this->publish_device_info(dev);
+		}
+
+		void notify_property_changed(const std::string& sdevice, const std::string& snode, const std::string& sproperty) {
+			notify_property_changed_impl(sdevice, snode, sproperty, nullptr);
+		}
+
+		void notify_property_changed(const std::string& sdevice, const std::string& snode, const std::string& sproperty, int64_t idx) {
+			notify_property_changed_impl(sdevice, snode, sproperty, &idx);
 		}
 	};
 }
