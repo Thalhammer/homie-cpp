@@ -22,7 +22,7 @@ namespace homie {
 		virtual std::string get_implementation() const = 0;
 		virtual std::set<std::string> get_stats() const = 0;
 		virtual std::string get_stat(const std::string& id) const = 0;
-		virtual std::chrono::milliseconds get_stats_interval() const = 0;
+		virtual std::chrono::seconds get_stats_interval() const = 0;
 
 		virtual std::string get_attribute(const std::string& id) const = 0;
 		virtual void set_attribute(const std::string& id, const std::string& value) = 0;
@@ -42,7 +42,7 @@ namespace homie {
 			return std::set<std::string>(parts.begin(), parts.end());
 		}
 		virtual std::string get_stat(const std::string& id) const { return get_attribute("stats/" + id); }
-		virtual std::chrono::milliseconds get_stats_interval() const override { return std::chrono::milliseconds(std::stoull(get_attribute("stats/interval"))); }
+		virtual std::chrono::seconds get_stats_interval() const override { return std::chrono::seconds(std::stoull(get_attribute("stats/interval"))); }
 	};
 	typedef std::shared_ptr<device> device_ptr;
 	typedef std::shared_ptr<const device> const_device_ptr;

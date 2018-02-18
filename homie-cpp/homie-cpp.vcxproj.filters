@@ -21,6 +21,9 @@
     <ClCompile Include="DeviceTest.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="MasterTest.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\homie-cpp\device.h">
@@ -48,6 +51,9 @@
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
     <ClInclude Include="include\homie-cpp\mqtt_client.h">
+      <Filter>Headerdateien\homie-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\homie-cpp\master.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
   </ItemGroup>

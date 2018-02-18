@@ -151,12 +151,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DeviceTest.cpp" />
+    <ClCompile Include="MasterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\homie-cpp\client.h" />
     <ClInclude Include="include\homie-cpp\datatype.h" />
     <ClInclude Include="include\homie-cpp\device.h" />
     <ClInclude Include="include\homie-cpp\device_state.h" />
+    <ClInclude Include="include\homie-cpp\master.h" />
     <ClInclude Include="include\homie-cpp\mqtt_client.h" />
     <ClInclude Include="include\homie-cpp\mqtt_event_handler.h" />
     <ClInclude Include="include\homie-cpp\node.h" />

@@ -89,7 +89,7 @@ namespace homie {
 			this->publish_device_attribute("$fw/name", dev->get_firmware_name());
 			this->publish_device_attribute("$fw/version", dev->get_firmware_version());
 			this->publish_device_attribute("$implementation", dev->get_implementation());
-			this->publish_device_attribute("$stats/interval", std::to_string(dev->get_stats_interval().count() / 1000));
+			this->publish_device_attribute("$stats/interval", std::to_string(dev->get_stats_interval().count()));
 
 			// Publish nodes
 			std::string nodes = "";
