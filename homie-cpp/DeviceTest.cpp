@@ -47,12 +47,17 @@ struct test_mqtt_client : public homie::mqtt_client {
 		if (is_manager)
 			FAIL();
 		open_called = true;
+
+		if (handler)
+			handler->on_connect(false, false);
 	}
 
 	virtual void open() override {
 		if (!is_manager)
 			FAIL();
 		open_called = true;
+		if (handler)
+			handler->on_connect(false, false);
 	}
 
 	virtual void publish(const std::string & topic, const std::string & payload, int qos, bool retain) override

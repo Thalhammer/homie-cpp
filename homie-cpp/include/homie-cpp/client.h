@@ -201,8 +201,6 @@ namespace homie {
 			mqtt.set_event_handler(this);
 
 			mqtt.open(base_topic + dev->get_id() + "/$state", enum_to_string(device_state::lost), 1, true);
-
-			this->publish_device_info();
 		}
 
 		~client() {
