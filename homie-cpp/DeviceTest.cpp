@@ -26,7 +26,7 @@ struct message_step {
 	}
 };
 
-struct test_mqtt_client : public homie::mqtt_connection {
+struct test_mqtt_client : public homie::mqtt_client {
 	homie::mqtt_event_handler* handler;
 
 	std::vector<message_step> steps;
@@ -34,10 +34,25 @@ struct test_mqtt_client : public homie::mqtt_connection {
 	std::set<std::string> expect_subscribe;
 	std::set<std::string> expect_unsubscribe;
 
+	bool open_called = false;
+	bool is_manager = false;
+
 	// Geerbt über mqtt_connection
 	virtual void set_event_handler(homie::mqtt_event_handler * evt) override
 	{
 		handler = evt;
+	}
+
+	virtual void open(const std::string& will_topic, const std::string& will_payload, int will_qos, bool will_retain) override {
+		if (is_manager)
+			FAIL();
+		open_called = true;
+	}
+
+	virtual void open() override {
+		if (!is_manager)
+			FAIL();
+		open_called = true;
 	}
 
 	virtual void publish(const std::string & topic, const std::string & payload, int qos, bool retain) override
@@ -71,150 +86,161 @@ struct test_mqtt_client : public homie::mqtt_connection {
 	}
 };
 
-struct test_property : public homie::property {
+struct test_property : public homie::basic_property {
 	std::string value = "100";
+	std::map<std::string, std::string> attributes;
+	std::weak_ptr<homie::node> node;
+
+	test_property(std::weak_ptr<homie::node> ptr)
+		: node(ptr)
+	{
+		attributes["name"] = "Intensity";
+		attributes["settable"] = "true";
+		attributes["unit"] = "%";
+		attributes["datatype"] = "integer";
+		attributes["format"] = "0:100";
+	}
+
+	virtual node_ptr get_node() { return node.lock(); }
+	virtual const_node_ptr get_node() const { return node.lock(); }
 
 	virtual std::string get_id() const {
 		return "intensity";
 	}
-	virtual std::string get_name() const {
-		return "Intensity";
-	}
-	virtual bool is_settable() const {
-		return true;
-	}
-	virtual std::string get_unit() const {
-		return "%";
-	}
-	virtual datatype get_datatype() const {
-		return datatype::integer;
-	}
-	virtual std::string get_format() const {
-		return "0:100";
-	}
-
+	
 	virtual std::string get_value(int64_t node_idx) const { return std::to_string(std::stoi(value)-node_idx); }
 	virtual void set_value(int64_t node_idx, const std::string& value) { this->value = value; }
 	virtual std::string get_value() const { return value; }
 	virtual void set_value(const std::string& value) { this->value = value; }
+
+	virtual std::string get_attribute(const std::string& id) const override {
+		auto it = attributes.find(id);
+		if (it != attributes.cend()) return it->second;
+		return "";
+	}
+	virtual void set_attribute(const std::string& id, const std::string& value) override {
+		attributes[id] = value;
+	}
+
 };
 
-struct test_node : public homie::node {
-	std::set<property_ptr> properties;
+struct test_node : public homie::basic_node {
+	std::map<std::string, homie::property_ptr> properties;
+	std::map<std::string, std::string> attributes;
+	std::map<std::pair<int64_t, std::string>, std::string> attributes_array;
+	std::weak_ptr<homie::device> device;
+
+	test_node(std::weak_ptr<homie::device> dev)
+		: device(dev)
+	{
+		attributes["name"] = "Testnode";
+		attributes["type"] = "light";
+	}
+
+	void add_property(homie::property_ptr ptr) {
+		properties.insert({ ptr->get_id(), ptr });
+	}
 
 	// Geerbt über node
+	virtual device_ptr get_device() override {
+		return device.lock();
+	}
+	virtual const_device_ptr get_device() const override {
+		return device.lock();
+	}
 	virtual std::string get_id() const override
 	{
 		return "testnode";
 	}
-	virtual std::string get_name() const override
+	virtual std::set<std::string> get_properties() const override
 	{
-		return "Testnode";
+		std::set<std::string> res;
+		for (auto& e : properties) res.insert(e.first);
+		return res;
 	}
-	virtual std::string get_name(int64_t node_idx) const override
+	virtual property_ptr get_property(const std::string& id) override
 	{
-		return "Testnode";
+		return properties.count(id) ? properties.at(id) : nullptr;
 	}
-	virtual std::string get_type() const override
+	virtual const_property_ptr get_property(const std::string& id) const override
 	{
-		return "light";
+		return properties.count(id) ? properties.at(id) : nullptr;
 	}
-	virtual bool is_array() const override
-	{
-		return false;
+
+	virtual std::string get_attribute(const std::string& id) const override {
+		auto it = attributes.find(id);
+		if (it != attributes.cend()) return it->second;
+		return "";
 	}
-	virtual std::pair<int64_t, int64_t> array_range() const override
-	{
-		return{ 0,0 };
+	virtual void set_attribute(const std::string& id, const std::string& value) override {
+		attributes[id] = value;
 	}
-	virtual std::set<const_property_ptr> get_properties() const override
-	{
-		return std::set<const_property_ptr>(properties.cbegin(), properties.cend());
+	virtual std::string get_attribute(const std::string& id, int64_t idx) const override {
+		auto it = attributes_array.find({ idx, id });
+		if (it != attributes_array.cend()) return it->second;
+		return "";
 	}
-	virtual std::set<property_ptr> get_properties() override
-	{
-		return properties;
+	virtual void set_attribute(const std::string& id, const std::string& value, int64_t idx) override {
+		attributes_array[{idx, id}] = value;
 	}
 };
 
 struct test_node_array : public test_node {
-	virtual std::string get_name(int64_t node_idx) const override
+	test_node_array(std::weak_ptr<homie::device> dev)
+		:test_node(dev)
 	{
-		return "Testnode" + std::to_string(node_idx);
-	}
-	virtual bool is_array() const override
-	{
-		return true;
-	}
-	virtual std::pair<int64_t, int64_t> array_range() const override
-	{
-		return{ 1,3 };
+		attributes["array"] = "1-3";
 	}
 };
 
-struct test_device : public homie::device {
-	std::set<homie::node_ptr> nodes;
+struct test_device : public homie::basic_device {
+	std::map<std::string, homie::node_ptr> nodes;
+	std::map<std::string, std::string> attributes;
+
+	test_device() {
+		attributes["name"] = "Testdevice";
+		attributes["state"] = "ready";
+		attributes["localip"] = "10.0.0.1";
+		attributes["mac"] = "AA:BB:CC:DD:EE:FF";
+		attributes["fw/name"] = "Firmwarename";
+		attributes["fw/version"] = "0.0.1";
+		attributes["implementation"] = "homie-cpp";
+		attributes["stats"] = "uptime";
+		attributes["stats/uptime"] = "0";
+		attributes["stats/interval"] = "60000";
+	}
+
+	void add_node(homie::node_ptr ptr) {
+		nodes.insert({ ptr->get_id(), ptr });
+	}
 
 	// Geerbt über device
 	virtual std::string get_id() const override
 	{
 		return "testdevice";
 	}
-	virtual std::string get_name() const override
+	virtual std::set<std::string> get_nodes() const override
 	{
-		return "Testdevice";
+		std::set<std::string> res;
+		for (auto& e : nodes) res.insert(e.first);
+		return res;
 	}
-	virtual device_state get_state() const override
+	virtual node_ptr get_node(const std::string& id) override
 	{
-		return device_state::ready;
+		return nodes.count(id) ? nodes.at(id) : nullptr;
 	}
-	virtual std::string get_localip() const override
+	virtual const_node_ptr get_node(const std::string& id) const override
 	{
-		return "10.0.0.1";
+		return nodes.count(id) ? nodes.at(id) : nullptr;
 	}
-	virtual std::string get_mac() const override
-	{
-		return "AA:BB:CC:DD:EE:FF";
+	
+	virtual std::string get_attribute(const std::string& id) const {
+		auto it = attributes.find(id);
+		if (it != attributes.cend()) return it->second;
+		return "";
 	}
-	virtual const_firmware_info_ptr get_firmware() const override
-	{
-		struct test_fw : public homie::firmware_info {
-			virtual std::string get_name() const {
-				return "Firmwarename";
-			}
-			virtual std::string get_version() const {
-				return "0.0.1";
-			}
-		};
-		return std::make_shared<test_fw>();
-	}
-	virtual std::set<const_node_ptr> get_nodes() const override
-	{
-		return std::set<const_node_ptr>(nodes.cbegin(), nodes.cend());
-	}
-	virtual std::set<node_ptr> get_nodes() override
-	{
-		return nodes;
-	}
-	virtual std::string get_implementation() const override
-	{
-		return "homie-cpp";
-	}
-	virtual std::set<const_status_ptr> get_stats() const override
-	{
-		struct uptime_status : public homie::status {
-			virtual std::string get_id() const {
-				return "uptime";
-			}
-			virtual std::string get_value() const {
-				return "0";
-			}
-		};
-		return{ std::make_shared<uptime_status>() };
-	}
-	virtual std::chrono::milliseconds get_stats_interval() const override
-	{
-		return std::chrono::milliseconds(60000);
+	virtual void set_attribute(const std::string& id, const std::string& value) {
+		attributes[id] = value;
 	}
 };
 
@@ -240,10 +266,10 @@ TEST(ClientTest, Init) {
 	test_client.add_step().add_message("homie/testdevice/$state", "disconnected");
 
 	{
-		homie::client client(test_client);
-		client.add_device(std::make_shared<test_device>());
+		homie::client client(test_client, std::make_shared<test_device>());
 	}
 
+	ASSERT_TRUE(test_client.open_called);
 	ASSERT_TRUE(test_client.steps.empty());
 	ASSERT_TRUE(test_client.expect_subscribe.empty());
 	ASSERT_TRUE(test_client.expect_unsubscribe.empty());
@@ -275,11 +301,11 @@ TEST(ClientTest, InitWithNode) {
 
 	{
 		auto dev = std::make_shared<test_device>();
-		dev->nodes.insert(std::make_shared<test_node>());
-		homie::client client(test_client);
-		client.add_device(dev);
+		dev->add_node(std::make_shared<test_node>(dev));
+		homie::client client(test_client, dev);
 	}
 
+	ASSERT_TRUE(test_client.open_called);
 	ASSERT_TRUE(test_client.steps.empty());
 	ASSERT_TRUE(test_client.expect_subscribe.empty());
 	ASSERT_TRUE(test_client.expect_unsubscribe.empty());
@@ -317,13 +343,13 @@ TEST(ClientTest, InitWithNodeAndProperty) {
 
 	{
 		auto dev = std::make_shared<test_device>();
-		auto node = std::make_shared<test_node>();
-		dev->nodes.insert(node);
-		node->properties.insert(std::make_shared<test_property>());
-		homie::client client(test_client);
-		client.add_device(dev);
+		auto node = std::make_shared<test_node>(dev);
+		dev->add_node(node);
+		node->add_property(std::make_shared<test_property>(node));
+		homie::client client(test_client, dev);
 	}
 
+	ASSERT_TRUE(test_client.open_called);
 	ASSERT_TRUE(test_client.steps.empty());
 	ASSERT_TRUE(test_client.expect_subscribe.empty());
 	ASSERT_TRUE(test_client.expect_unsubscribe.empty());
@@ -358,22 +384,19 @@ TEST(ClientTest, InitWithNodeArrayAndProperty) {
 		.add_message("homie/testdevice/testnode/intensity/$format", "0:100")
 		.add_message("homie/testdevice/testnode_1/intensity", "99")
 		.add_message("homie/testdevice/testnode_2/intensity", "98")
-		.add_message("homie/testdevice/testnode_3/intensity", "97")
-		.add_message("homie/testdevice/testnode_1/$name", "Testnode1")
-		.add_message("homie/testdevice/testnode_2/$name", "Testnode2")
-		.add_message("homie/testdevice/testnode_3/$name", "Testnode3");
+		.add_message("homie/testdevice/testnode_3/intensity", "97");
 	test_client.add_step().add_message("homie/testdevice/$state", "ready");
 	test_client.add_step().add_message("homie/testdevice/$state", "disconnected");
 
 	{
 		auto dev = std::make_shared<test_device>();
-		auto node = std::make_shared<test_node_array>();
-		dev->nodes.insert(node);
-		node->properties.insert(std::make_shared<test_property>());
-		homie::client client(test_client);
-		client.add_device(dev);
+		auto node = std::make_shared<test_node_array>(dev);
+		dev->add_node(node);
+		node->add_property(std::make_shared<test_property>(node));
+		homie::client client(test_client, dev);
 	}
 
+	ASSERT_TRUE(test_client.open_called);
 	ASSERT_TRUE(test_client.steps.empty());
 	ASSERT_TRUE(test_client.expect_subscribe.empty());
 	ASSERT_TRUE(test_client.expect_unsubscribe.empty());
@@ -408,10 +431,7 @@ TEST(ClientTest, ChangesGetPublished) {
 		.add_message("homie/testdevice/testnode/intensity/$format", "0:100")
 		.add_message("homie/testdevice/testnode_1/intensity", "99")
 		.add_message("homie/testdevice/testnode_2/intensity", "98")
-		.add_message("homie/testdevice/testnode_3/intensity", "97")
-		.add_message("homie/testdevice/testnode_1/$name", "Testnode1")
-		.add_message("homie/testdevice/testnode_2/$name", "Testnode2")
-		.add_message("homie/testdevice/testnode_3/$name", "Testnode3");
+		.add_message("homie/testdevice/testnode_3/intensity", "97");
 	test_client.add_step().add_message("homie/testdevice/$state", "ready");
 	test_client.add_step()
 		.add_message("homie/testdevice/testnode_1/intensity", "19")
@@ -424,25 +444,25 @@ TEST(ClientTest, ChangesGetPublished) {
 
 	{
 		auto dev = std::make_shared<test_device>();
-		auto node = std::make_shared<test_node_array>();
-		dev->nodes.insert(node);
-		node->properties.insert(std::make_shared<test_property>());
-		homie::client client(test_client);
-		client.add_device(dev);
+		auto node = std::make_shared<test_node_array>(dev);
+		dev->add_node(node);
+		node->add_property(std::make_shared<test_property>(node));
+		homie::client client(test_client, dev);
 
-		(*node->properties.begin())->set_value("20");
-		client.notify_property_changed(dev->get_id(), node->get_id(), "intensity");
+		node->properties.begin()->second->set_value("20");
+		client.notify_property_changed(node->get_id(), "intensity");
 
-		(*node->properties.begin())->set_value("9");
-		client.notify_property_changed(dev->get_id(), node->get_id(), "intensity", 1);
+		node->properties.begin()->second->set_value("9");
+		client.notify_property_changed(node->get_id(), "intensity", 1);
 
-		(*node->properties.begin())->set_value("8");
-		client.notify_property_changed(dev->get_id(), node->get_id(), "intensity", 2);
+		node->properties.begin()->second->set_value("8");
+		client.notify_property_changed(node->get_id(), "intensity", 2);
 
-		(*node->properties.begin())->set_value("7");
-		client.notify_property_changed(dev->get_id(), node->get_id(), "intensity", 3);
+		node->properties.begin()->second->set_value("7");
+		client.notify_property_changed(node->get_id(), "intensity", 3);
 	}
 
+	ASSERT_TRUE(test_client.open_called);
 	ASSERT_TRUE(test_client.steps.empty());
 	ASSERT_TRUE(test_client.expect_subscribe.empty());
 	ASSERT_TRUE(test_client.expect_unsubscribe.empty());

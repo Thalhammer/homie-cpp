@@ -5,7 +5,7 @@ namespace homie {
 	namespace utils {
 		// split string
 		template<typename StringType = std::string>
-		inline std::vector<StringType> split(const StringType& s, const StringType& delim, size_t offset = StringType::npos, size_t max = std::numeric_limits<size_t>::max()) {
+		inline std::vector<StringType> split(const StringType& s, const StringType& delim, size_t offset = 0, size_t max = std::numeric_limits<size_t>::max()) {
 			std::vector<StringType> res;
 			do {
 				auto pos = s.find(delim, offset);

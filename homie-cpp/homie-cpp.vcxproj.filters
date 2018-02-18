@@ -29,12 +29,6 @@
     <ClInclude Include="include\homie-cpp\device_state.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
-    <ClInclude Include="include\homie-cpp\firmware_info.h">
-      <Filter>Headerdateien\homie-cpp</Filter>
-    </ClInclude>
-    <ClInclude Include="include\homie-cpp\status.h">
-      <Filter>Headerdateien\homie-cpp</Filter>
-    </ClInclude>
     <ClInclude Include="include\homie-cpp\node.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
@@ -47,13 +41,13 @@
     <ClInclude Include="include\homie-cpp\client.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
-    <ClInclude Include="include\homie-cpp\mqtt_connection.h">
-      <Filter>Headerdateien\homie-cpp</Filter>
-    </ClInclude>
     <ClInclude Include="include\homie-cpp\mqtt_event_handler.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
     <ClInclude Include="include\homie-cpp\utils.h">
+      <Filter>Headerdateien\homie-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\homie-cpp\mqtt_client.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
   </ItemGroup>
