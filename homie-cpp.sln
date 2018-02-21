@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "homie-cpp", "homie-cpp\homie-cpp.vcxproj", "{CB03C97E-6246-45E9-8ACB-654580490F6C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_device", "sample_device\sample_device.vcxproj", "{00776267-00BA-4530-A6A7-17FD07769C6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,19 @@ Global
 		{CB03C97E-6246-45E9-8ACB-654580490F6C}.Release|x64.Build.0 = Release|x64
 		{CB03C97E-6246-45E9-8ACB-654580490F6C}.Release|x86.ActiveCfg = Release|Win32
 		{CB03C97E-6246-45E9-8ACB-654580490F6C}.Release|x86.Build.0 = Release|Win32
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Debug|x64.ActiveCfg = Debug|x64
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Debug|x64.Build.0 = Debug|x64
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Debug|x86.ActiveCfg = Debug|Win32
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Debug|x86.Build.0 = Debug|Win32
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Release|x64.ActiveCfg = Release|x64
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Release|x64.Build.0 = Release|x64
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Release|x86.ActiveCfg = Release|Win32
+		{00776267-00BA-4530-A6A7-17FD07769C6F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0705C17-FDA4-4457-BD3D-CAF3037B3FE6}
 	EndGlobalSection
 EndGlobal

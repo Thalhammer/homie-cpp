@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <set>
 #include "property.h"
 
 namespace homie {
