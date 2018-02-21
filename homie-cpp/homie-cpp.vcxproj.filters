@@ -56,5 +56,11 @@
     <ClInclude Include="include\homie-cpp\master.h">
       <Filter>Headerdateien\homie-cpp</Filter>
     </ClInclude>
+    <ClInclude Include="include\homie-cpp\master_event_handler.h">
+      <Filter>Headerdateien\homie-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\homie-cpp\client_event_handler.h">
+      <Filter>Headerdateien\homie-cpp</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

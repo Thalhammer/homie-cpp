@@ -2,6 +2,7 @@
 #include "mqtt_client.h"
 #include "device.h"
 #include "utils.h"
+#include "master_event_handler.h"
 #include <set>
 #include <map>
 
@@ -147,6 +148,7 @@ namespace homie {
 		};
 
 		mqtt_client& mqtt;
+		master_event_handler* handler;
 		std::string base_topic;
 		std::map<std::string, std::shared_ptr<remote_device>> devices;
 
@@ -183,7 +185,8 @@ namespace homie {
 		}
 
 		void handle_broadcast(const std::string& level, const std::string& payload) {
-
+			if (handler)
+				handler->on_broadcast(level, payload);
 		}
 
 		void handle_device_message(const std::vector<std::string>& parts, const std::string& payload) {
@@ -193,9 +196,19 @@ namespace homie {
 				for (size_t i = 2; i < parts.size(); i++) {
 					id += "/" + parts[i];
 				}
-				dev->set_attribute(id, payload);
+				if (id == "state" && payload != "init" && dev->get_state() == device_state::init) {
+					dev->set_attribute(id, payload);
+					if (handler)
+						handler->on_device_discovered(dev);
+				}
+				else {
+					dev->set_attribute(id, payload);
+					if (handler && dev->get_state() != device_state::init) {
+						handler->on_device_changed(dev, id);
+					}
+				}
 			}
-			else if(parts.size() >= 3) {
+			else if (parts.size() >= 3) {
 				bool is_array = false;
 				int64_t idx = 0;
 				std::shared_ptr<remote_node> node;
@@ -209,7 +222,7 @@ namespace homie {
 					else
 						node = dev->get_add_node(parts[1]);
 				}
-				
+
 				if (parts[2][0] == '$') {
 					std::string id = parts[2].substr(1);
 					for (size_t i = 3; i < parts.size(); i++) {
@@ -217,13 +230,21 @@ namespace homie {
 					}
 					if (is_array) node->set_attribute(id, payload, idx);
 					else node->set_attribute(id, payload);
+					if (handler && dev->get_state() != device_state::init) {
+						if (is_array) handler->on_node_changed(node, idx, id);
+						else handler->on_node_changed(node, id);
+					}
 				}
 				else {
 					auto prop = node->get_add_property(parts[2]);
 					if (parts.size() == 3) {
-						if (is_array)
-							prop->value_array[idx] = payload;
+						if (is_array) prop->value_array[idx] = payload;
 						else prop->value = payload;
+
+						if (handler && dev->get_state() != device_state::init) {
+							if (is_array) handler->on_property_value_changed(prop, idx, payload);
+							else handler->on_property_value_changed(prop, payload);
+						}
 					}
 					else {
 						std::string id = parts[3].substr(1);
@@ -231,6 +252,10 @@ namespace homie {
 							id += "/" + parts[i];
 						}
 						prop->set_attribute(id, payload);
+						if (handler && dev->get_state() != device_state::init) {
+							if (is_array) handler->on_property_changed(prop, idx, id);
+							else handler->on_property_changed(prop, id);
+						}
 					}
 				}
 			}
@@ -256,7 +281,7 @@ namespace homie {
 		}
 	public:
 		master(mqtt_client& con, std::string basetopic = "homie/")
-			: mqtt(con), base_topic(basetopic)
+			: mqtt(con), handler(nullptr), base_topic(basetopic)
 		{
 			mqtt.set_event_handler(this);
 			mqtt.open();
@@ -277,6 +302,14 @@ namespace homie {
 			std::set<const_device_ptr> res;
 			for (auto& e : devices) res.insert(e.second);
 			return res;
+		}
+
+		void publish_broadcast(const std::string& level, const std::string& payload) {
+			mqtt.publish(base_topic + "$broadcast/" + level, payload, 1, false);
+		}
+
+		void set_event_handler(master_event_handler* hdl) {
+			handler = hdl;
 		}
 	};
 }

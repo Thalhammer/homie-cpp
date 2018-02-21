@@ -2,6 +2,7 @@
 #include "mqtt_client.h"
 #include "device.h"
 #include "utils.h"
+#include "client_event_handler.h"
 #include <set>
 
 namespace homie {
@@ -9,6 +10,7 @@ namespace homie {
 		mqtt_client& mqtt;
 		std::string base_topic;
 		device_ptr dev;
+		client_event_handler* handler;
 
 		// Inherited by mqtt_event_handler
 		virtual void on_connect(bool session_present, bool reconnected) override {
@@ -74,7 +76,8 @@ namespace homie {
 		}
 
 		void handle_broadcast(const std::string& level, const std::string& payload) {
-
+			if(handler)
+				handler->on_broadcast(level, payload);
 		}
 
 		void publish_device_info() {
@@ -195,7 +198,7 @@ namespace homie {
 		}
 	public:
 		client(mqtt_client& con, device_ptr pdev, std::string basetopic = "homie/")
-			: mqtt(con), base_topic(basetopic), dev(pdev)
+			: mqtt(con), base_topic(basetopic), dev(pdev), handler(nullptr)
 		{
 			if (!pdev) throw std::invalid_argument("device is null");
 			mqtt.set_event_handler(this);
@@ -215,6 +218,10 @@ namespace homie {
 
 		void notify_property_changed(const std::string& snode, const std::string& sproperty, int64_t idx) {
 			notify_property_changed_impl(snode, sproperty, &idx);
+		}
+
+		void set_event_handler(client_event_handler* hdl) {
+			handler = hdl;
 		}
 	};
 }
