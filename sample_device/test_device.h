@@ -1,34 +1,44 @@
 #pragma once
 #include <map>
-#include "..\homie-cpp\include\homie-cpp\device.h"
+#include <iostream>
+#include "..\homie-cpp\include\homie-cpp\client.h"
 
 struct test_property : public homie::basic_property {
 	std::string value = "100";
 	std::map<std::string, std::string> attributes;
 	std::weak_ptr<homie::node> node;
+	homie::client* client;
 
 	test_property(std::weak_ptr<homie::node> ptr)
-		: node(ptr)
+		: node(ptr), client(nullptr)
 	{
-		attributes["name"] = "Intensity";
+		attributes["name"] = "Testproperty";
 		attributes["settable"] = "true";
-		attributes["unit"] = "%";
-		attributes["datatype"] = "integer";
-		attributes["format"] = "0:100";
+		attributes["datatype"] = "string";
 	}
 
 	virtual homie::node_ptr get_node() { return node.lock(); }
 	virtual homie::const_node_ptr get_node() const { return node.lock(); }
 
 	virtual std::string get_id() const {
-		return "intensity";
+		return "testproperty";
 	}
 
-	virtual std::string get_value(int64_t node_idx) const { return std::to_string(std::stoi(value) - node_idx); }
-	virtual void set_value(int64_t node_idx, const std::string& value) { this->value = value; }
+	virtual std::string get_value(int64_t node_idx) const { return ""; }
+	virtual void set_value(int64_t node_idx, const std::string& value) { }
 	virtual std::string get_value() const { return value; }
-	virtual void set_value(const std::string& value) { this->value = value; }
+	virtual void set_value(const std::string& value) {
+		this->value = value;
+		std::cout << "Testproperty set to value:" << value << std::endl;
+		if(client != nullptr)
+			client->notify_property_changed(get_node()->get_id(), get_id());
+	}
 
+	virtual std::set<std::string> get_attributes() const override {
+		std::set<std::string> res;
+		for (auto& e : attributes) res.insert(e.first);
+		return res;
+	}
 	virtual std::string get_attribute(const std::string& id) const override {
 		auto it = attributes.find(id);
 		if (it != attributes.cend()) return it->second;
@@ -83,6 +93,18 @@ struct test_node : public homie::basic_node {
 		return properties.count(id) ? properties.at(id) : nullptr;
 	}
 
+	virtual std::set<std::string> get_attributes() const override {
+		std::set<std::string> res;
+		for (auto& e : attributes) res.insert(e.first);
+		return res;
+	}
+	virtual std::set<std::string> get_attributes(int64_t idx) const override {
+		std::set<std::string> res;
+		for (auto& e : attributes_array)
+			if(e.first.first == idx)
+				res.insert(e.first.second);
+		return res;
+	}
 	virtual std::string get_attribute(const std::string& id) const override {
 		auto it = attributes.find(id);
 		if (it != attributes.cend()) return it->second;
@@ -142,6 +164,11 @@ struct test_device : public homie::basic_device {
 		return nodes.count(id) ? nodes.at(id) : nullptr;
 	}
 
+	virtual std::set<std::string> get_attributes() const override {
+		std::set<std::string> res;
+		for (auto& e : attributes) res.insert(e.first);
+		return res;
+	}
 	virtual std::string get_attribute(const std::string& id) const {
 		auto it = attributes.find(id);
 		if (it != attributes.cend()) return it->second;

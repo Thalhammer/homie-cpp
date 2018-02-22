@@ -32,6 +32,11 @@ namespace homie {
 			virtual std::string get_value() const { return value; }
 			virtual void set_value(const std::string& value) { parent->publish_set_property(this, value); }
 
+			virtual std::set<std::string> get_attributes() const override {
+				std::set<std::string> res;
+				for (auto& e : attributes) res.insert(e.first);
+				return res;
+			}
 			virtual std::string get_attribute(const std::string& id) const override {
 				auto it = attributes.find(id);
 				if (it != attributes.cend()) return it->second;
@@ -86,6 +91,18 @@ namespace homie {
 				return properties.count(id) ? properties.at(id) : nullptr;
 			}
 
+			virtual std::set<std::string> get_attributes() const override {
+				std::set<std::string> res;
+				for (auto& e : attributes) res.insert(e.first);
+				return res;
+			}
+			virtual std::set<std::string> get_attributes(int64_t idx) const override {
+				std::set<std::string> res;
+				for (auto& e : attributes_array)
+					if(e.first.first == idx)
+						res.insert(e.first.second);
+				return res;
+			}
 			virtual std::string get_attribute(const std::string& id) const override {
 				auto it = attributes.find(id);
 				if (it != attributes.cend()) return it->second;
@@ -137,6 +154,11 @@ namespace homie {
 				return nodes.count(id) ? nodes.at(id) : nullptr;
 			}
 
+			virtual std::set<std::string> get_attributes() const override {
+				std::set<std::string> res;
+				for (auto& e : attributes) res.insert(e.first);
+				return res;
+			}
 			virtual std::string get_attribute(const std::string& id) const {
 				auto it = attributes.find(id);
 				if (it != attributes.cend()) return it->second;
@@ -196,7 +218,7 @@ namespace homie {
 				for (size_t i = 2; i < parts.size(); i++) {
 					id += "/" + parts[i];
 				}
-				if (id == "state" && payload != "init" && dev->get_state() == device_state::init) {
+				if (id == "state" && payload != "init" && (dev->get_attribute("state") == "" || dev->get_state() == device_state::init)) {
 					dev->set_attribute(id, payload);
 					if (handler)
 						handler->on_device_discovered(dev);
@@ -302,6 +324,14 @@ namespace homie {
 			std::set<const_device_ptr> res;
 			for (auto& e : devices) res.insert(e.second);
 			return res;
+		}
+
+		device_ptr get_discovered_device(const std::string& id) {
+			return devices.count(id) ? devices.at(id) : nullptr;
+		}
+
+		const_device_ptr get_discovered_device(const std::string& id) const {
+			return devices.count(id) ? devices.at(id) : nullptr;
 		}
 
 		void publish_broadcast(const std::string& level, const std::string& payload) {

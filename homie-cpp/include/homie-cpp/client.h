@@ -66,9 +66,9 @@ namespace homie {
 			}
 
 			auto node = dev->get_node(rnode);
-			if (node != nullptr || node->is_array() != is_array_node) return;
+			if (node == nullptr || node->is_array() != is_array_node) return;
 			auto prop = node->get_property(sproperty);
-			if (prop != nullptr) return;
+			if (prop == nullptr) return;
 
 			if (is_array_node)
 				prop->set_value(id, payload);

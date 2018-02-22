@@ -24,6 +24,7 @@ namespace homie {
 		virtual std::string get_value() const = 0;
 		virtual void set_value(const std::string& value) = 0;
 
+		virtual std::set<std::string> get_attributes() const = 0;
 		virtual std::string get_attribute(const std::string& id) const = 0;
 		virtual void set_attribute(const std::string& id, const std::string& value) = 0;
 	};

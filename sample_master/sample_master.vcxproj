@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{00776267-00BA-4530-A6A7-17FD07769C6F}</ProjectGuid>
-    <RootNamespace>sampledevice</RootNamespace>
+    <ProjectGuid>{64ECE6E4-4D7B-45ED-9049-8FDE2FF6C529}</ProjectGuid>
+    <RootNamespace>samplemaster</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -115,11 +115,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mqtt_client.cpp" />
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mqtt_client.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test_device.h" />
+    <ClInclude Include="console.h" />
     <ClInclude Include="mqtt_client.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

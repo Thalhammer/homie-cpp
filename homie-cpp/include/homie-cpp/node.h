@@ -23,6 +23,8 @@ namespace homie {
 		virtual const_property_ptr get_property(const std::string& id) const = 0;
 		virtual property_ptr get_property(const std::string& id) = 0;
 
+		virtual std::set<std::string> get_attributes() const = 0;
+		virtual std::set<std::string> get_attributes(int64_t idx) const = 0;
 		virtual std::string get_attribute(const std::string& id) const = 0;
 		virtual void set_attribute(const std::string& id, const std::string& value) = 0;
 		virtual std::string get_attribute(const std::string& id, int64_t idx) const = 0;

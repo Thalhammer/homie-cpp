@@ -24,6 +24,7 @@ namespace homie {
 		virtual std::string get_stat(const std::string& id) const = 0;
 		virtual std::chrono::seconds get_stats_interval() const = 0;
 
+		virtual std::set<std::string> get_attributes() const = 0;
 		virtual std::string get_attribute(const std::string& id) const = 0;
 		virtual void set_attribute(const std::string& id, const std::string& value) = 0;
 	};
@@ -31,7 +32,7 @@ namespace homie {
 	struct basic_device : public device {
 		// Geerbt über device
 		virtual std::string get_name() const override { return get_attribute("name"); }
-		virtual device_state get_state() const override { return enum_from_string<device_state>(get_attribute("state")); }
+		virtual device_state get_state() const override { try { return enum_from_string<device_state>(get_attribute("state")); } catch (const std::exception&) { return device_state::init; } }
 		virtual std::string get_localip() const override { return get_attribute("localip"); }
 		virtual std::string get_mac() const override { return get_attribute("mac"); }
 		virtual std::string get_firmware_name() const override { return get_attribute("fw/name"); }

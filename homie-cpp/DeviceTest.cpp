@@ -112,6 +112,11 @@ namespace {
 		virtual std::string get_value() const { return value; }
 		virtual void set_value(const std::string& value) { this->value = value; }
 
+		virtual std::set<std::string> get_attributes() const override {
+			std::set<std::string> res;
+			for (auto& e : attributes) res.insert(e.first);
+			return res;
+		}
 		virtual std::string get_attribute(const std::string& id) const override {
 			auto it = attributes.find(id);
 			if (it != attributes.cend()) return it->second;
@@ -166,6 +171,18 @@ namespace {
 			return properties.count(id) ? properties.at(id) : nullptr;
 		}
 
+		virtual std::set<std::string> get_attributes() const override {
+			std::set<std::string> res;
+			for (auto& e : attributes) res.insert(e.first);
+			return res;
+		}
+		virtual std::set<std::string> get_attributes(int64_t idx) const override {
+			std::set<std::string> res;
+			for (auto& e : attributes_array)
+				if (e.first.first == idx)
+					res.insert(e.first.second);
+			return res;
+		}
 		virtual std::string get_attribute(const std::string& id) const override {
 			auto it = attributes.find(id);
 			if (it != attributes.cend()) return it->second;
@@ -233,6 +250,11 @@ namespace {
 			return nodes.count(id) ? nodes.at(id) : nullptr;
 		}
 
+		virtual std::set<std::string> get_attributes() const override {
+			std::set<std::string> res;
+			for (auto& e : attributes) res.insert(e.first);
+			return res;
+		}
 		virtual std::string get_attribute(const std::string& id) const {
 			auto it = attributes.find(id);
 			if (it != attributes.cend()) return it->second;

@@ -15,10 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mqtt_client.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="mqtt_client.cpp">
+    <ClCompile Include="console.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -26,7 +29,7 @@
     <ClInclude Include="mqtt_client.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="test_device.h">
+    <ClInclude Include="console.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
