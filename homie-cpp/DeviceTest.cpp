@@ -1,5 +1,6 @@
 ﻿#include <gtest/gtest.h>
 #include <homie-cpp/client.h>
+#include <map>
 
 using namespace homie;
 
