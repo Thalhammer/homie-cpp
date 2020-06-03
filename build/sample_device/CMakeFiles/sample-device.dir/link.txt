@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/sample-device.dir/main.cpp.o CMakeFiles/sample-device.dir/mqtt_client.cpp.o  -o sample-device -lgtest -lgtest_main -lpthread 

@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/testbed.dir/mqtt.cpp.o CMakeFiles/testbed.dir/main.cpp.o  -o testbed -lgtest -lgtest_main -lpthread -lmosquitto 

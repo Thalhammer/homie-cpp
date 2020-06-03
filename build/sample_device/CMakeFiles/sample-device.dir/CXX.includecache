@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dominik/Dokumente/homie-cpp/sample_device/main.cpp
+iostream
+-
+string
+-
+mqtt_client.h
+/home/dominik/Dokumente/homie-cpp/sample_device/mqtt_client.h
+../homie-cpp/include/homie-cpp/client.h
+/home/dominik/Dokumente/homie-cpp/homie-cpp/include/homie-cpp/client.h
+test_device.h
+/home/dominik/Dokumente/homie-cpp/sample_device/test_device.h
+
+/home/dominik/Dokumente/homie-cpp/sample_device/mqtt_client.cpp
+mqtt_client.h
+/home/dominik/Dokumente/homie-cpp/sample_device/mqtt_client.h
+MQTTClient.h
+-
+
+/home/dominik/Dokumente/homie-cpp/sample_device/mqtt_client.h
+../homie-cpp/include/homie-cpp/mqtt_client.h
+/home/dominik/Dokumente/homie-cpp/homie-cpp/include/homie-cpp/mqtt_client.h
+memory
+-
+
+/home/dominik/Dokumente/homie-cpp/sample_device/test_device.h
+map
+-
+iostream
+-
+../homie-cpp/include/homie-cpp/client.h
+/home/dominik/Dokumente/homie-cpp/homie-cpp/include/homie-cpp/client.h
+
