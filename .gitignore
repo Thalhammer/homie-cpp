@@ -9,3 +9,5 @@ TestResults
 *.opendb
 *.VC.db
 *.user
+build
+.vscode

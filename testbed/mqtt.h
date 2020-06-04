@@ -12,12 +12,15 @@ namespace mqtt {
     class message;
     class connect_options;
     class abstract_client;
+    class abstract_async_client;
     typedef std::shared_ptr<message> message_ptr;
     typedef std::shared_ptr<const message> const_message_ptr;
     typedef std::shared_ptr<connect_options> connect_options_ptr;
     typedef std::shared_ptr<const connect_options> const_connect_options_ptr;
     typedef std::shared_ptr<abstract_client> abstract_client_ptr;
     typedef std::shared_ptr<const abstract_client> const_abstract_client_ptr;
+    typedef std::shared_ptr<abstract_async_client> abstract_async_client_ptr;
+    typedef std::shared_ptr<const abstract_async_client> const_abstract_async_client_ptr;
     class message {
         int m_id;
         std::string m_topic;
@@ -90,7 +93,7 @@ namespace mqtt {
             msg->set_duplicate(false);
             m_last_will = msg;
         }
-        static std::string generate_random_clientid();
+        static std::string generate_random_clientid(size_t maxlen = 16);
     private:
         bool m_auto_reconnect = false;
         bool m_clean_session = default_clean_session;
@@ -134,26 +137,23 @@ namespace mqtt {
         typedef std::function<void(int)> on_disconnect_cb_t;
         typedef std::function<void(int)> on_publish_cb_t;
         typedef std::function<void(const_message_ptr)> on_message_cb_t;
-        typedef std::function<void(int, std::vector<int>)> on_subscribe_cb_t;
+        typedef std::function<void(int, int)> on_subscribe_cb_t;
         typedef std::function<void(int)> on_unsubscribe_cb_t;
         typedef std::function<void(ttl::loglevel, std::string)> on_log_cb_t;
 
         virtual ~abstract_async_client() {}
-        virtual void connect(const std::string& uri) = 0;
-        virtual void connect(const_connect_options_ptr opts) = 0;
+        virtual void connect(const std::string& uri, bool blocking = false) = 0;
+        virtual void connect(const_connect_options_ptr opts, bool blocking = false) = 0;
         virtual void disconnect() = 0;
         virtual const std::string& get_clientid() const = 0;
         virtual const std::string& get_serveruri() const = 0;
         virtual bool is_connected() const = 0;
-        virtual void publish(std::string topic, std::string payload, int qos = 1, bool retained = false) = 0;
-        virtual void publish(message_ptr msg) = 0;
+        virtual void publish(std::string topic, std::string payload, int qos = 1, bool retained = false, int* mid = nullptr) = 0;
+        virtual void publish(message_ptr msg, bool wait) = 0;
         virtual void reconnect() = 0;
-        virtual void subscribe(const std::string& topic) = 0;
-        virtual void subscribe(const std::vector<std::string>& topics) = 0;
-        virtual void subscribe(const std::string& topic, int qos) = 0;
-        virtual void subscribe(const std::vector<std::pair<std::string, int>>& topics) = 0;
-        virtual void unsubscribe(const std::string& topic) = 0;
-        virtual void unsubscribe(const std::vector<std::string>& topic) = 0;
+        virtual void subscribe(const std::string& topic, int* mid = nullptr) = 0;
+        virtual void subscribe(const std::string& topic, int qos, int* mid = nullptr) = 0;
+        virtual void unsubscribe(const std::string& topic, int* mid = nullptr) = 0;
 
         virtual void set_on_log(on_log_cb_t cb) = 0;
         virtual void set_on_connect(on_connect_cb_t) = 0;
@@ -164,6 +164,7 @@ namespace mqtt {
         virtual void set_on_unsubscribe(on_unsubscribe_cb_t) = 0;
     };
 
-    abstract_client_ptr create_client(); 
+    abstract_client_ptr create_client();
+    abstract_async_client_ptr create_async_client();
 }
 }

@@ -12,12 +12,13 @@ int main(int, char**) try {
 		log(lvl, "mqtt") << str;
 	});
 	client->set_on_message([&log](homiecpp::mqtt::const_message_ptr msg){
-		log(ttl::loglevel::INFO, "mqtt") << "Message(" << msg->get_topic() << "): " << msg->get_payload();
+		log(ttl::loglevel::INFO, "main") << "Message(" << msg->get_topic() << "): " << msg->get_payload();
 	});
 	client->connect("127.0.0.1");
-	log(ttl::loglevel::INFO, "main") << "Test";
-	//client->publish("test/topic", "Hello World");
-	//client->subscribe("test/#");
+	log(ttl::loglevel::INFO, "main") << "Test1";
+	client->publish("test/topic", "Hello World");
+	log(ttl::loglevel::INFO, "main") << "Test2";
+	client->subscribe("test/#");
 
 	std::cin.get();
 }
