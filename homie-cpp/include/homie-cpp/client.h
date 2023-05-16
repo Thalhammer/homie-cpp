@@ -20,6 +20,7 @@ namespace homie {
 			else {
 				publish_device_info();
 			}
+			mqtt.subscribe(base_topic + dev->get_id() + "/+/+/set", 1);
 		}
 		virtual void on_closing() override {
 			mqtt.publish(base_topic + dev->get_id() + "/$state", enum_to_string(device_state::disconnected), 1, true);
@@ -153,9 +154,6 @@ namespace homie {
 			if (!stats.empty())
 				stats.resize(stats.size() - 1);
 			this->publish_device_attribute("$stats", stats);
-
-			// Subscribe to set topics
-			this->mqtt.subscribe(base_topic + dev->get_id() + "/+/+/set", 1);
 
 			// Everything done, set device to real state
 			this->publish_device_attribute("$state", enum_to_string(dev->get_state()));
